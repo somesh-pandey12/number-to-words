@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Number to Words + Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+
+    .num-input {
+      width: 100%;
+      font-size: 28px;
+      font-weight: 600;
+      border: none;
+      border-bottom: 2px solid #e0e0e0;
+      outline: none;
+      padding-bottom: 8px;
+      color: #1a1a2e;
+      background: transparent;
+      transition: border-color 0.2s;
+    }
+
+    .num-input:focus { border-bottom-color: #4361ee; }
+
+    .word-result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f7f8ff;
+      border-radius: 10px;
+      font-size: 16px;
+      color: #333;
+      min-height: 56px;
+      line-height: 1.6;
+      font-style: italic;
+      border-left: 3px solid #4361ee;
+    }
+
+    .calc-display {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      text-align: right;
+      margin-bottom: 1rem;
+    }
+
+    .calc-expr {
+      font-size: 13px;
+      color: #888;
+      min-height: 18px;
+    }
+
+    .calc-val {
+      font-size: 36px;
+      font-weight: 600;
+      color: #fff;
+      word-break: break-all;
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 18px 0;
+      font-size: 18px;
+      font-weight: 500;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.95); opacity: 0.8; }
+
+    .btn.num  { background: #f0f2f5; color: #1a1a2e; }
+    .btn.op   { background: #e8edff; color: #4361ee; }
+    .btn.eq   { background: #4361ee; color: #fff; }
+    .btn.clr  { background: #ffe8e8; color: #e63946; }
+    .btn.span2 { grid-column: span 2; }
+
+    .use-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      background: #f7f8ff;
+      border: 1.5px solid #4361ee;
+      color: #4361ee;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .use-btn:hover { background: #e8edff; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔢 Number to Words</h1>
+
+  <div class="card">
+    <p class="card-title">✏️ Convert Number</p>
+    <input
+      class="num-input"
+      id="numInput"
+      type="text"
+      placeholder="Type a number..."
+      oninput="convertNum()"
+      autofocus
+    />
+    <div class="word-result" id="wordResult">Words will appear here...</div>
+  </div>
+
+  <div class="card">
+    <p class="card-title">🧮 Calculator</p>
+    <div class="calc-display">
+      <div class="calc-expr" id="expr"></div>
+      <div class="calc-val" id="calcVal">0</div>
+    </div>
+
+    <div class="btn-grid">
+      <button class="btn clr"  onclick="clearAll()">AC</button>
+      <button class="btn clr"  onclick="toggleSign()">+/−</button>
+      <button class="btn op"   onclick="percent()">%</button>
+      <button class="btn op"   onclick="op('/')">÷</button>
+
+      <button class="btn num"  onclick="digit('7')">7</button>
+      <button class="btn num"  onclick="digit('8')">8</button>
+      <button class="btn num"  onclick="digit('9')">9</button>
+      <button class="btn op"   onclick="op('*')">×</button>
+
+      <button class="btn num"  onclick="digit('4')">4</button>
+      <button class="btn num"  onclick="digit('5')">5</button>
+      <button class="btn num"  onclick="digit('6')">6</button>
+      <button class="btn op"   onclick="op('-')">−</button>
+
+      <button class="btn num"  onclick="digit('1')">1</button>
+      <button class="btn num"  onclick="digit('2')">2</button>
+      <button class="btn num"  onclick="digit('3')">3</button>
+      <button class="btn op"   onclick="op('+')">+</button>
+
+      <button class="btn num span2" onclick="digit('0')">0</button>
+      <button class="btn num"  onclick="dot()">.</button>
+      <button class="btn eq"   onclick="evaluate()">=</button>
+    </div>
+
+    <button class="use-btn" onclick="useResult()">⬆ Use result in converter</button>
+  </div>
+</div>
+
+<script>
+  const ones = ['','one','two','three','four','five','six','seven','eight','nine',
+    'ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen',
+    'seventeen','eighteen','nineteen'];
+  const tens = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+
+  function belowThousand(n) {
+    if (n === 0) return '';
+    if (n < 20) return ones[n];
+    if (n < 100) {
+      const t = Math.floor(n / 10), r = n % 10;
+      return tens[t] + (r ? ' ' + ones[r] : '');
+    }
+    const h = Math.floor(n / 100), r = n % 100;
+    return ones[h] + ' hundred' + (r ? ' ' + belowThousand(r) : '');
+  }
+
+  function intToWords(n) {
+    if (n === 0) return 'zero';
+    const chunks = [
+      { val: 1e9,  name: 'billion' },
+      { val: 1e6,  name: 'million' },
+      { val: 1e3,  name: 'thousand' },
+      { val: 1,    name: '' }
+    ];
+    let result = '', rem = n;
+    for (const c of chunks) {
+      const q = Math.floor(rem / c.val);
+      if (q > 0) {
+        result += (result ? ' ' : '') + belowThousand(q) + (c.name ? ' ' + c.name : '');
+        rem %= c.val;
+      }
+    }
+    return result.trim();
+  }
+
+  function toWords(raw) {
+    raw = raw.trim();
+    if (raw === '' || isNaN(raw)) return '—';
+    const neg = raw.startsWith('-');
+    const abs = neg ? raw.slice(1) : raw;
+    const parts = abs.split('.');
+    const intPart = parseInt(parts[0], 10) || 0;
+    let word = (neg ? 'negative ' : '') + intToWords(intPart);
+    if (parts.length > 1 && parts[1].length > 0) {
+      const dec = parts[1].replace(/0+$/, '');
+      if (dec.length > 0) {
+        const decNum = parseInt(dec, 10);
+        word += ' and ' + intToWords(decNum);
+        const place = ['','tenth','hundredth','thousandth','ten-thousandth'];
+        const p = dec.length <= 4 ? place[dec.length] : '';
+        if (p) word += ' ' + (decNum === 1 ? p : p + 's');
+      }
+    }
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }
+
+  function convertNum() {
+    const v = document.getElementById('numInput').value;
+    document.getElementById('wordResult').textContent = v ? toWords(v) : 'Words will appear here...';
+  }
+
+  // Calculator
+  let cur = '0', prev = null, pendingOp = null, fresh = false;
+
+  function updateDisplay() {
+    const d = parseFloat(cur);
+    document.getElementById('calcVal').textContent = isNaN(d) ? 'Error' : +d.toFixed(10) + '';
+  }
+
+  function digit(d) {
+    if (fresh) { cur = '0'; fresh = false; }
+    if (cur === '0' && d !== '.') cur = d;
+    else if (!(d === '.' && cur.includes('.'))) cur += d;
+    updateDisplay();
+  }
+
+  function dot() { digit('.'); }
+
+  function op(o) {
+    if (prev !== null && pendingOp && !fresh) evaluate(true);
+    prev = parseFloat(cur);
+    pendingOp = o;
+    fresh = true;
+    const sym = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+    document.getElementById('expr').textContent = cur + ' ' + sym[o];
+  }
+
+  function evaluate(silent) {
+    if (prev === null || !pendingOp) return;
+    const a = prev, b = parseFloat(cur);
+    let r;
+    if      (pendingOp === '/') r = b === 0 ? NaN : a / b;
+    else if (pendingOp === '*') r = a * b;
+    else if (pendingOp === '+') r = a + b;
+    else                        r = a - b;
+    if (!silent) document.getElementById('expr').textContent = '';
+    cur = isNaN(r) ? 'Error' : String(+r.toFixed(10));
+    prev = null; pendingOp = null; fresh = true;
+    updateDisplay();
+  }
+
+  function clearAll() {
+    cur = '0'; prev = null; pendingOp = null; fresh = false;
+    document.getElementById('expr').textContent = '';
+    updateDisplay();
+  }
+
+  function toggleSign() { cur = String(-parseFloat(cur)); updateDisplay(); }
+  function percent()    { cur = String(parseFloat(cur) / 100); updateDisplay(); }
+
+  function useResult() {
+    const v = document.getElementById('calcVal').textContent;
+    document.getElementById('numInput').value = v;
+    convertNum();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+
+</body>
+</html>
